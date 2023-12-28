@@ -9,6 +9,8 @@ const asyncHandler = (fn) => {
 
 }
 
+export {asyncHandler}
+
 
 // async await>>.
 
