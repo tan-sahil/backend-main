@@ -88,7 +88,7 @@ const userSchema = new mongoose.Schema({
 /** this refress token generation will also be same as avove one only difference will be that it will hold very few
  * data compare to the payload of the accesstoken 
  */
- userSchema.methods.generateAccessToken = function (){
+ userSchema.methods.generateRefreshToken = function (){
    return  jwt.sign({
         _id: this._id,
     }, process.env.JWT_REFRESH_TOKEN_SECRET , {
