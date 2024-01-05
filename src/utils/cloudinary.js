@@ -7,7 +7,6 @@ we can sasy thats why we are keeping it in the util section and nothing fency;
  * in cloudinary it will be saved
  */
 import {v2 as cloudinary} from 'cloudinary';
-import { log } from 'console';
 import fs from 'fs';
           
 
