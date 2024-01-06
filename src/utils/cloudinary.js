@@ -29,6 +29,7 @@ const cloudinaryUploader = async (fileUploadPath) =>{
         })
         console.log("url of the cloudinary ", response.url);
         console.log("the complete response we got after uploading on cloudinary ", response);
+        fs.unlinkSync(fileUploadPath)
         return response;
     } catch (error) {
         /** reaching here can point to two things first that file upload failed  and will have to unlink locally saved

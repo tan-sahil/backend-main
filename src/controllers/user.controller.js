@@ -19,13 +19,13 @@ const registerUser = asyncHandler(async (req, res) => {
         }
     
    const userExsist = await User.findOne({
-        $or : [{username}, {email}]
+        $or : [{username}, {email}]    // generally values are passed in key-value pair
     });
 
     if(userExsist) {
         throw new ApiError(400, "username and email already exsist");
     }
-    
+    if (req.files) console.log(req.files);
     const avatarLocalpath =  req.files?.avatar[0]?.path;    // multer ne access diya hai
     const coverImageLocalpath =  req.files?.coverImage[0]?.path; 
     if(!avatarLocalpath){
@@ -38,16 +38,16 @@ const registerUser = asyncHandler(async (req, res) => {
         fullName,
         email,
         password,
-        username: username.toLowercase(),
+        username: username.toLowerCase(),
         avatar : avatar.url,
         coverImage: coverImage?.url || ""
     })
-   const reponse = await User.findById(user._id).select("-password -refreshToken");
-   if(!reponse){
+   const response = await User.findById(user._id).select("-password -refreshToken");
+   if(!response){
     throw new ApiError(409, "something went wrong while saving to the db");
    }
    return res.status(201).json(
-   new ResponseApi(200, reponse, "user is registered succesfullt ")
+   new ResponseApi(200, response, "user is registered succesfullt ")
    )
 })
 
