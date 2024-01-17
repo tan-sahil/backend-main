@@ -66,8 +66,10 @@ const userSchema = new mongoose.Schema({
  /** now also want to provide way to decrypt it bcz jb login hoga to methods dene pdega to 
   * ek methods.property add krta hai isCorrectPassword.
   * aur b crypt ka compare jo hai voh boolen reaturn krta hai. 
+  * these methods will be accessesd by an object crated by this schme not by User since that is mongoose objct
   */
  userSchema.methods.isCorrectPassword =  async function(password){
+    /**this represent object of schema with whome this function will be linked to call */
      return await bcrypt.compare(password, this.password);
  } 
 

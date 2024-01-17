@@ -27,8 +27,10 @@ const cloudinaryUploader = async (fileUploadPath) =>{
             resource_type : 'auto'   // letting it decide by itself ki file ka type kya hai
             
         })
+        /** url hai jo public hai */
         console.log("url of the cloudinary ", response.url);
         console.log("the complete response we got after uploading on cloudinary ", response);
+        /** public file save ko unlik kr rhe hai */
         fs.unlinkSync(fileUploadPath)
         return response;
     } catch (error) {
