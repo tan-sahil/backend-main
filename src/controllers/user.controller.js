@@ -65,7 +65,7 @@ const registerUser = asyncHandler(async (req, res) => {
 const loginUser = asyncHandler(async (req, res) => {
     /**details destructure */
     const {username, email, password}=req.body;
-    if(!username || !email){
+    if(!username && !email){
         new ApiError(405, "please provide username or email");
     }
     const user = await  User.findOne({
@@ -94,4 +94,29 @@ const loginUser = asyncHandler(async (req, res) => {
        }, "user Logged in Succesfully"
        ))
 })
-export   {registerUser, loginUser}
+
+const logoutUser = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    await User.findByIdAndUpdate(userId, {
+        $set: {
+            refreshToken: undefined
+        }
+            
+    },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly : true,
+        secure : true
+    }
+
+    res.status(200)
+ .clearCookie("accessToken", options)
+.clearCookie("refreshToken", options)
+.json(new ResponseApi(200,{}, "user Logged out Succesfully"))
+})
+export   {registerUser, loginUser, 
+    logoutUser}
