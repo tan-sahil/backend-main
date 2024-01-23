@@ -14,6 +14,7 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
     return {accessToken, refreshToken};
 }
 const registerUser = asyncHandler(async (req, res) => {
+    console.log("request is here in register", req.body)
     // data receive and then empty check 
     // username and email unique hai? 
     // avatar pr check lgana hai 
@@ -21,7 +22,11 @@ const registerUser = asyncHandler(async (req, res) => {
     // db me data ko store krva na hai 
     // reponse bhejna hai
     const {fullName, email, password, username} = req.body;
-    if(fullName === "") throw new ApiError(400, "fullname is required") // oreder bad me dhyan denge
+    
+    if(fullName === ""){
+       
+        throw new ApiError(400, "fullname is required") // oreder bad me dhyan denge
+    }
     if([ email, password, username].some((feild) => 
         feild?.trim() === "")){
             throw new ApiError(400, "All feilds are required to be filled")
@@ -36,14 +41,18 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "username and email already exsist");
     }
     if (req.files) console.log(req.files);
-    const avatarLocalpath =  req.files?.avatar[0]?.path;    // multer ne access diya hai
+    
+    const avatarLocalpath =  req.files?.avatar[0]?.path; 
+    
+       // multer ne access diya hai
     const coverImageLocalpath =  req.files?.coverImage[0]?.path; 
     if(!avatarLocalpath){
         throw new ApiError(400, "avatar is required");
     }
+   
     const avatar = await cloudinaryUploader(avatarLocalpath); 
     const coverImage = await cloudinaryUploader(coverImageLocalpath);
-
+    
    const user = await User.create({
         fullName,
         email,
@@ -87,8 +96,8 @@ const loginUser = asyncHandler(async (req, res) => {
         secure : true
        }
        res.status(200)
-       .cookies("accessToken", accessToken, options )
-       .cookies("refreshToken", refreshToken, options)
+       .cookie("accessToken", accessToken, options )
+       .cookie("refreshToken", refreshToken, options)
        .json(new ResponseApi(201,  {
         user : loggedInUser , accessToken, refreshToken
        }, "user Logged in Succesfully"

@@ -22,6 +22,7 @@ import fs from 'fs';
 
 const cloudinaryUploader = async (fileUploadPath) =>{
     try {
+
         if(!fileUploadPath) return null;
        const response = await  cloudinary.uploader.upload(fileUploadPath, {
             resource_type : 'auto'   // letting it decide by itself ki file ka type kya hai
@@ -29,7 +30,7 @@ const cloudinaryUploader = async (fileUploadPath) =>{
         })
         /** url hai jo public hai */
         console.log("url of the cloudinary ", response.url);
-        console.log("the complete response we got after uploading on cloudinary ", response);
+        // console.log("the complete response we got after uploading on cloudinary ", response);
         /** public file save ko unlik kr rhe hai */
         fs.unlinkSync(fileUploadPath)
         return response;
@@ -38,6 +39,7 @@ const cloudinaryUploader = async (fileUploadPath) =>{
          * file for cleaning purposes
          * unlinkSync mean that it must take place 
          */
+        console.log(error?.message)
         fs.unlinkSync(fileUploadPath)
         return null;
     }

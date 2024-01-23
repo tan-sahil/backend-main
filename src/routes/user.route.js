@@ -13,6 +13,8 @@ router.route("/register").post( upload.fields([
 ]) , registerUser); 
 
 router.route("/login").post(loginUser);
+
+/**protected routes */
 router.route("/logout").post(verifyJwt, logoutUser)
 
 export default router;
