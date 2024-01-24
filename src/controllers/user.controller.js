@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { cloudinaryUploader } from "../utils/cloudinary.js";
 import { ResponseApi } from "../utils/ResponseApi.js";
-
+import jwt from 'jsonwebtoken'
 const generateAccessTokenAndRefreshToken = async (userId) => {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken()
@@ -126,6 +126,38 @@ const logoutUser = asyncHandler(async (req, res) => {
  .clearCookie("accessToken", options)
 .clearCookie("refreshToken", options)
 .json(new ResponseApi(200,{}, "user Logged out Succesfully"))
+})
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+    if(!incomingRefreshToken){
+        throw new ApiError(404, "no refresh token provided")
+    }
+    const verifiedToken = await jwt.verify(incomingRefreshToken, process.env.JWT_REFRESH_TOKEN_SECRET);
+    if(!verifiedToken){
+        throw new ApiError(401, "not valid refreshToken")
+    }
+    const user = await User.findById(verifiedToken._id).select("-password -refreshToken");
+    if(!user){
+        throw new ApiError(401, "incorrect refresh token");
+    }
+
+    if(incomingRefreshToken !== user.refreshToken){
+        throw new ApiError(401, "refresh token is not valid")
+    }
+    const {refreshToken, accessToken} = await generateAccessTokenAndRefreshToken(user._id);
+    // refresh token ko db me bhi save krna hai....
+
+
+    // newly generated refresh and access token ko db me bhi bhejna hai
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+    res.status(200)
+    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken , options)
+    .json()
 })
 export   {registerUser, loginUser, 
     logoutUser}
