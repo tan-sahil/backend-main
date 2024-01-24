@@ -154,7 +154,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true
     }
-    res.status(200)
+    return res.status(200)
     .cookie("refreshToken", newRefreshToken, options)
     .cookie("accessToken", accessToken , options)
     .json(
@@ -164,5 +164,70 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             }, "AcessToken refreshed")
     )
 })
+
+const updatePassword = asyncHandler(async (req, res) => {
+    // middlware validate kr chuka hai aur req.user ko populate kr chucka hai;
+    const {oldPassword, newPassword} = req.body;
+    const user = await User.findById(req.user?._id);
+    const validatePassword = user.isCorrectPassword(oldPassword);
+    if(!validatePassword){
+        throw new ApiError(400, "old password is not correct")
+    }
+    user.password = newPassword;
+    await user.save();
+    return res.status(200).json(new ResponseApi(200, {}, "password updated successfully"))
+})
+
+const getLoggedInUser = asyncHandler(async (req, res) => {
+    // middleware has injected req.user so now just have to get it from there;
+    const user = req.user;
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+    return res.status(200).json(new ResponseApi(200, user, "user found"))
+})
+
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const {fullName, email} = req.body;
+    if(!fullName || !email){
+        throw new ApiError(400, "fullName and email feilds are required")
+    }
+    const user = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            fullName, email    
+        }
+    }, {
+        new: true // send me the updated user 
+    }).select("-password");
+    if(!user){
+        throw new ApiError(404, "user not found")
+    }
+    return res.status(200).json(new ResponseApi(200, user, "user details updated"))
+})
+
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalpath = req.file?.path;  // since only single file is being is sent so this is 
+    // needed to be mananged properly and through multer this is needed to be taken care of this is 
+    //not the case like the register controller where we have multiple files to be uploaded
+    if(!avatarLocalpath){
+        throw new ApiError(400, "avatar is missing")
+    }
+    const avatar = await cloudinaryUploader(avatarLocalpath);
+    if(!avatar.url){
+        throw new ApiError(400, "something went wrong while uploading to cloudinary")
+    }
+
+    FileSystem.unlinkSync(avatarLocalpath);
+    const user = await User.findByIdAndUpdate(req.user._id, {
+        $set: {
+            avatar: avatar?.url
+        }
+    }, {
+        new: true
+    }).select("-password");
+
+    return res.status(200).json(new ResponseApi(200, user, "user avatar updated"));
+})
 export   {registerUser, loginUser, 
-    logoutUser, refreshAccessToken}
+    logoutUser, refreshAccessToken, updatePassword, getLoggedInUser, updateAccountDetails,
+    updateUserAvatar}
