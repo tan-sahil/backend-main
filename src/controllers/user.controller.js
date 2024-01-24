@@ -137,7 +137,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if(!verifiedToken){
         throw new ApiError(401, "not valid refreshToken")
     }
-    const user = await User.findById(verifiedToken._id).select("-password -refreshToken");
+    const user = await User.findById(verifiedToken._id);
     if(!user){
         throw new ApiError(401, "incorrect refresh token");
     }
@@ -145,8 +145,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     if(incomingRefreshToken !== user.refreshToken){
         throw new ApiError(401, "refresh token is not valid")
     }
-    const {refreshToken, accessToken} = await generateAccessTokenAndRefreshToken(user._id);
-    // refresh token ko db me bhi save krna hai....
+    const {newRefreshToken, accessToken} = await generateAccessTokenAndRefreshToken(user._id);
+   
 
 
     // newly generated refresh and access token ko db me bhi bhejna hai
@@ -155,9 +155,14 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         secure: true
     }
     res.status(200)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
     .cookie("accessToken", accessToken , options)
-    .json()
+    .json(
+        new ResponseApi(200,
+            {
+                accessToken, refreshToken : newRefreshToken
+            }, "AcessToken refreshed")
+    )
 })
 export   {registerUser, loginUser, 
-    logoutUser}
+    logoutUser, refreshAccessToken}
